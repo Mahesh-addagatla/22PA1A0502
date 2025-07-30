@@ -10,7 +10,9 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api", urlRoutes);
+const port = process.env.PORT || 8000;
 
-app.listen(8000, () => {
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
   Log("backend", "info", "config", "Server running on port 5000");
 });

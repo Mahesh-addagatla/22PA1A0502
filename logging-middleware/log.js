@@ -1,90 +1,65 @@
 import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
+const LOGGING_URL = "http://20.244.56.144/evaluation-service/logs";
+const TOKEN = process.env.ACCESS_TOKEN;
 
-const {
-  AUTH_URL,
-  LOGGING_URL,
-  EMAIL,
-  NAME,
-  ROLL_NO,
-  ACCESS_CODE,
-  CLIENT_ID,
-  CLIENT_SECRET,
-} = process.env;
-
-let tokenCache = {
-  token: null,
-  expiresAt: 0,
-};
-
-async function getAccessToken() {
-  const now = Math.floor(Date.now() / 1000);
-  if (tokenCache.token && tokenCache.expiresAt > now) {
-    return tokenCache.token;
-  }
-
-  try {
-    const response = await axios.post(AUTH_URL, {
-      email: EMAIL,
-      name: NAME,
-      rollNo: ROLL_NO,
-      accessCode: ACCESS_CODE,
-      clientID: CLIENT_ID,
-      clientSecret: CLIENT_SECRET,
-    });
-
-    tokenCache.token = response.data.access_token;
-    tokenCache.expiresAt = response.data.expires_in;
-    return tokenCache.token;
-  } catch (err) {
-    console.error("[Logger] Failed to fetch token:", err.message);
-    throw new Error("Authentication failed");
-  }
-}
 
 const VALID_STACKS = ["backend", "frontend"];
 const VALID_LEVELS = ["debug", "info", "warn", "error", "fatal"];
 const VALID_PACKAGES = {
-  backend: [
-    "cache", "controller", "cron_job", "db", "domain", "handler", "repository", "route", "service",
-  ],
-  frontend: ["api", "component", "hook", "page", "state", "style"],
-  common: ["auth", "config", "middleware", "utils"],
+	backend: [
+		"cache", "controller", "cron_job", "db",
+		"domain", "handler", "repository", "route", "service",
+	],
+	frontend: [
+		"api", "component", "hook", "page", "state", "style",
+	],
+	common: ["auth", "config", "middleware", "utils"],
 };
 
 function isValidPackage(stack, pkg) {
-  return VALID_PACKAGES.common.includes(pkg) || VALID_PACKAGES[stack]?.includes(pkg);
+	return VALID_PACKAGES.common.includes(pkg) || VALID_PACKAGES[stack]?.includes(pkg);
 }
 
+
 export async function Log(stack, level, pkg, message) {
-  if (!VALID_STACKS.includes(stack)) {
-    return console.error(`[Logger] Invalid stack "${stack}"`);
-  }
 
-  if (!VALID_LEVELS.includes(level)) {
-    return console.error(`[Logger] Invalid level "${level}"`);
-  }
+	if (!VALID_STACKS.includes(stack)) {
+		console.error(`[Logger] Invalid stack "${stack}". Must be one of ${VALID_STACKS.join(", ")}`);
+		return;
+	}
 
-  if (!isValidPackage(stack, pkg)) {
-    return console.error(`[Logger] Invalid package "${pkg}" for stack "${stack}"`);
-  }
+	if (!VALID_LEVELS.includes(level)) {
+		console.error(`[Logger] Invalid level "${level}". Must be one of ${VALID_LEVELS.join(", ")}`);
+		return;
+	}
 
-  try {
-    const token = await getAccessToken();
-    const response = await axios.post(
-      LOGGING_URL,
-      { stack, level, package: pkg, message },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+	if (!isValidPackage(stack, pkg)) {
+		console.error(`[Logger] Invalid package "${pkg}" for stack "${stack}".`);
+		return;
+	}
 
-    console.log(`[Logger] ${response.data.message} (Log ID: ${response.data.logID})`);
-  } catch (error) {
-    console.error(`[Logger] Failed to send log: ${error.message}`);
-  }
+
+	const logPayload = {
+		stack,
+		level,
+		package: pkg,
+		message,
+	};
+
+
+	try {
+		console.log(TOKEN);
+		console.log(LOGGING_URL);
+		const response = await axios.post(LOGGING_URL, logPayload, {
+			headers: {
+				Authorization: `Bearer ${TOKEN}`,
+				"Content-Type": "application/json",
+			},
+		});
+		console.log(`[Logger] ${response.data.message} (Log ID: ${response.data.logID})`);
+	} catch (error) {
+		console.error(`[Logger] Failed to send log: ${error.message}`);
+	}
 }
