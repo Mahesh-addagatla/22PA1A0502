@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Log from "../config/logger";
 import '../styles/Redirect.css';
 
 const RedirectPage = () => {
@@ -38,12 +37,10 @@ const RedirectPage = () => {
             }
           }, 1000);
           
-          await Log("frontend", "info", "page", `Redirecting to: ${redirectUrl}`);
         } else {
           throw new Error('No redirect occurred');
         }
       } catch (err) {
-        await Log("frontend", "error", "page", `Redirect failed: ${err.message}`);
         
         if (err.response?.status === 404) {
           setStatus('notfound');

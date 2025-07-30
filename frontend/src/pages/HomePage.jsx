@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axios from "axios";
-import Log from "../config/logger";
 import '../styles/HomePage.css';
 
 const HomePage = () => {
@@ -31,7 +30,6 @@ const HomePage = () => {
 
       setShortened(response.data.shortLink);
       setExpiryTime(response.data.expiry);
-      await Log("frontend", "info", "component", `Short URL created: ${response.data.shortLink}`);
     } catch (err) {
       let errorMessage = 'An error occurred';
       
@@ -46,7 +44,6 @@ const HomePage = () => {
       }
       
       setError(errorMessage);
-      await Log("frontend", "error", "component", errorMessage);
     } finally {
       setLoading(false);
     }

@@ -50,8 +50,8 @@ export async function Log(stack, level, pkg, message) {
 
 
 	try {
-		console.log(TOKEN);
-		console.log(LOGGING_URL);
+		// console.log(TOKEN);
+		// console.log(LOGGING_URL);
 		const response = await axios.post(LOGGING_URL, logPayload, {
 			headers: {
 				Authorization: `Bearer ${TOKEN}`,
