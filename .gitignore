@@ -1,0 +1,6 @@
+/backend/node_modules
+/frontend/node_modules
+/logging-middleware/node_modules
+/backend/.env
+/frontend/.env
+/logging-middleware/.env
